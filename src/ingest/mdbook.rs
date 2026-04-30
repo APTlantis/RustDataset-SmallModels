@@ -257,9 +257,18 @@ mod tests {
 
     #[test]
     fn collect_chunks_assigns_stable_ids() {
-        let chunks = collect_chunks(std::path::Path::new("OVERVIEW-RustCorpus.md")).unwrap();
+        let path = std::env::temp_dir().join("rust-corpus-forge-mdbook-test.md");
+        std::fs::write(
+            &path,
+            "# Ownership\nRust ownership keeps memory safe with clear rules.\n\n# Borrowing\nBorrowing lets code use values without moving them.",
+        )
+        .unwrap();
+
+        let chunks = collect_chunks(&path).unwrap();
 
         assert!(chunks.len() > 1);
         assert_eq!(chunks[0].id, "mdbook-chunk-000000");
+
+        std::fs::remove_file(path).unwrap();
     }
 }

@@ -65,8 +65,8 @@ pub fn run_pipeline(config: PipelineConfig) -> Result<()> {
         }
     }
 
-    write_manifest(&config.out, &config.out.join("corpus_manifest.toml"))?;
     validate_to_report(&config.out, &config.out.join("quality_report.json"))?;
+    write_manifest(&config.out, &config.out.join("corpus_manifest.toml"))?;
     write_hashes(&config.out, &config.out.join("snapshot-hashes.txt"))?;
 
     Ok(())

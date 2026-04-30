@@ -21,6 +21,7 @@ pub struct QualityReport {
     pub files: BTreeMap<String, FileReport>,
     pub counts_by_type: BTreeMap<String, usize>,
     pub counts_by_validation_status: BTreeMap<String, usize>,
+    pub counts_by_cargo_check: BTreeMap<String, usize>,
     pub counts_by_topic: BTreeMap<String, usize>,
     pub counts_by_license: BTreeMap<String, usize>,
     pub errors: Vec<ValidationError>,
@@ -31,6 +32,9 @@ pub struct FileReport {
     pub entries: usize,
     pub valid_entries: usize,
     pub invalid_entries: usize,
+    pub cargo_check_passed: usize,
+    pub cargo_check_failed: usize,
+    pub cargo_check_not_run: usize,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -65,6 +69,7 @@ pub fn validate_input(input: &Path) -> Result<QualityReport> {
         files: BTreeMap::new(),
         counts_by_type: BTreeMap::new(),
         counts_by_validation_status: BTreeMap::new(),
+        counts_by_cargo_check: BTreeMap::new(),
         counts_by_topic: BTreeMap::new(),
         counts_by_license: BTreeMap::new(),
         errors: Vec::new(),
@@ -78,6 +83,9 @@ pub fn validate_input(input: &Path) -> Result<QualityReport> {
                     entries: entries.len(),
                     valid_entries: 0,
                     invalid_entries: 0,
+                    cargo_check_passed: 0,
+                    cargo_check_failed: 0,
+                    cargo_check_not_run: 0,
                 };
 
                 for entry in entries {
@@ -96,6 +104,20 @@ pub fn validate_input(input: &Path) -> Result<QualityReport> {
                     );
                     for topic in &entry.metadata.topics {
                         increment(&mut report.counts_by_topic, topic);
+                    }
+                    match entry.metadata.cargo_check {
+                        Some(true) => {
+                            file_report.cargo_check_passed += 1;
+                            increment(&mut report.counts_by_cargo_check, "passed");
+                        }
+                        Some(false) => {
+                            file_report.cargo_check_failed += 1;
+                            increment(&mut report.counts_by_cargo_check, "failed");
+                        }
+                        None => {
+                            file_report.cargo_check_not_run += 1;
+                            increment(&mut report.counts_by_cargo_check, "not_run");
+                        }
                     }
                     increment(
                         &mut report.counts_by_license,
@@ -133,6 +155,9 @@ pub fn validate_input(input: &Path) -> Result<QualityReport> {
                         entries: 0,
                         valid_entries: 0,
                         invalid_entries: 1,
+                        cargo_check_passed: 0,
+                        cargo_check_failed: 0,
+                        cargo_check_not_run: 0,
                     },
                 );
                 report.invalid_entries += 1;

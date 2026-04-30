@@ -7,12 +7,60 @@ language = "rust"
 target_model = "TinyLlama-1.1B-Chat-v1.0"
 created_at = "2026-04-30T00:00:00Z"
 
-[outputs]
-api_qa = "rust_api_qa.jsonl"
-code_completion = "rust_code_completion.jsonl"
-code_repair = "rust_code_repair.jsonl"
-concepts = "rust_concepts_sft.jsonl"
-parquet = "rust_corpus.parquet"
+[summary]
+generated_at = "2026-04-30T21:31:22.224000400+00:00"
+total_entries = 18
+schema_valid_entries = 18
+schema_invalid_entries = 0
+validated_entries = 4
+not_validated_entries = 14
+cargo_check_passed = 4
+cargo_check_failed = 4
+cargo_check_not_run = 10
+
+[outputs.rust_api_qa]
+path = "rust_api_qa.jsonl"
+bytes = 1694
+blake3 = "42426da75042136f367ad26bbddff98bcd02a724e53cd12dde1b1695ec714890"
+entries = 2
+schema_valid_entries = 2
+schema_invalid_entries = 0
+cargo_check_passed = 0
+cargo_check_failed = 0
+cargo_check_not_run = 2
+
+[outputs.rust_code_completion]
+path = "rust_code_completion.jsonl"
+bytes = 6129
+blake3 = "4dbf635eafb3ba1af971733b089c2945786c617ec84964f44e75c7934d0883a7"
+entries = 6
+schema_valid_entries = 6
+schema_invalid_entries = 0
+cargo_check_passed = 2
+cargo_check_failed = 4
+cargo_check_not_run = 0
+
+[outputs.rust_code_repair]
+path = "rust_code_repair.jsonl"
+bytes = 1974
+blake3 = "743aaec855e13ded89a2617de999eb06fa53c0bc858105870e4bba2dd42fae84"
+entries = 2
+schema_valid_entries = 2
+schema_invalid_entries = 0
+cargo_check_passed = 2
+cargo_check_failed = 0
+cargo_check_not_run = 0
+
+[outputs.rust_concepts_sft]
+path = "rust_concepts_sft.jsonl"
+bytes = 7153
+blake3 = "aba6037157040f5ad65524ad32ab6ddba8acbf91144c1c6dfc9bd8718c5d11ad"
+entries = 8
+schema_valid_entries = 8
+schema_invalid_entries = 0
+cargo_check_passed = 0
+cargo_check_failed = 0
+cargo_check_not_run = 8
 
 [quality]
 requires_license = true
