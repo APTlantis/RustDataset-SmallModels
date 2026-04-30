@@ -95,6 +95,30 @@ cargo run -- manifest --input out --output out/corpus_manifest.toml
 cargo run -- hashes --input out --output out/snapshot-hashes.txt
 ```
 
+## CPU LoRA Training
+
+The `training/` folder contains a TinyLlama LoRA training harness adapted from the known-good HolyC training workflow.
+
+Prepare train/validation JSONL with a `text` field:
+
+```powershell
+python training/prepare_rust_train.py --config training/rust_cpu_smoke.toml
+```
+
+Run a trainer dry check without loading the model:
+
+```powershell
+python training/finetune_rust.py --config training/rust_cpu_smoke.toml --dry-run
+```
+
+Run a tiny CPU smoke fine-tune:
+
+```powershell
+python training/finetune_rust.py --config training/rust_cpu_smoke.toml --max-steps 5
+```
+
+The default smoke config writes prepared data to `training/data/rust-smoke/` and LoRA adapters to `models/rust-tinyllama-lora-smoke/`. CPU training is intentionally configured with a small batch size and short default step count. Scale `max_steps`, corpus size, and epochs only after the smoke run is healthy.
+
 ## Validation Semantics
 
 There are two validation layers:

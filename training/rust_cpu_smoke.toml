@@ -1,0 +1,39 @@
+[model]
+name = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+
+[data]
+input_dir = "out"
+prepared_dir = "training/data/rust-smoke"
+train_file = "training/data/rust-smoke/train.jsonl"
+validation_file = "training/data/rust-smoke/validation.jsonl"
+validation_ratio = 0.15
+max_examples = 64
+
+[training]
+output_dir = "models/rust-tinyllama-lora-smoke"
+seed = 42
+force_cpu = true
+max_steps = 20
+num_train_epochs = 1
+micro_batch_size = 1
+gradient_accumulation_steps = 4
+learning_rate = 0.0002
+max_seq_length = 512
+logging_steps = 1
+save_steps = 10
+eval_steps = 10
+save_total_limit = 2
+
+[lora]
+r = 16
+alpha = 32
+dropout = 0.05
+target_modules = [
+  "q_proj",
+  "k_proj",
+  "v_proj",
+  "o_proj",
+  "gate_proj",
+  "up_proj",
+  "down_proj",
+]
