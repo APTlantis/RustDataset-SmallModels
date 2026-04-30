@@ -83,6 +83,13 @@ pub enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Generate code repair JSONL from ingested Rust code items.
+    GenerateRepair {
+        #[arg(long)]
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
     /// Validate JSONL outputs and write a quality report.
     Validate {
         #[arg(long)]
@@ -101,6 +108,13 @@ pub enum Command {
     },
     /// Write a corpus manifest TOML file.
     Manifest {
+        #[arg(long)]
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Export JSONL dataset outputs to a combined Parquet file.
+    ExportParquet {
         #[arg(long)]
         input: PathBuf,
         #[arg(long)]

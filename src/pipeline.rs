@@ -3,15 +3,16 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result};
 
 use crate::{
-    export::{hashes::write_hashes, manifest::write_manifest},
+    export::{hashes::write_hashes, manifest::write_manifest, parquet::export_parquet},
     generate::{
         api_qa::generate_api_qa,
         completion::generate_completion,
         concepts::generate_sft_from_chunks,
-        samples::{API_QA_FILE, COMPLETION_FILE, CONCEPTS_FILE, generate_samples},
+        repair::generate_repair,
+        samples::{API_QA_FILE, COMPLETION_FILE, CONCEPTS_FILE, REPAIR_FILE, generate_samples},
     },
     ingest::{crates_mirror::ingest_crates, mdbook::ingest_mdbook, rustdoc_json::ingest_rustdoc},
-    quality::{cargo_validate::validate_code_jsonl, report::validate_to_report},
+    quality::{cargo_validate::validate_code_jsonl_with_code_items, report::validate_to_report},
 };
 
 #[derive(Debug, Clone)]
@@ -52,20 +53,30 @@ pub fn run_pipeline(config: PipelineConfig) -> Result<()> {
     if let Some(crates) = &config.crates {
         let code_items = config.work.join("code_items.jsonl");
         let completion_output = config.out.join(COMPLETION_FILE);
+        let repair_output = config.out.join(REPAIR_FILE);
         ingest_crates(crates, &code_items)?;
         generate_completion(&code_items, &completion_output)?;
+        generate_repair(&code_items, &repair_output)?;
 
         if config.validate_code {
-            validate_code_jsonl(
+            validate_code_jsonl_with_code_items(
                 &completion_output,
                 &completion_output,
                 &config.work.join("cargo_validate"),
+                &code_items,
+            )?;
+            validate_code_jsonl_with_code_items(
+                &repair_output,
+                &repair_output,
+                &config.work.join("cargo_validate"),
+                &code_items,
             )?;
             remove_path_if_exists(&config.work.join("cargo_validate"))?;
         }
     }
 
     validate_to_report(&config.out, &config.out.join("quality_report.json"))?;
+    export_parquet(&config.out, &config.out.join("rust_corpus.parquet"))?;
     write_manifest(&config.out, &config.out.join("corpus_manifest.toml"))?;
     write_hashes(&config.out, &config.out.join("snapshot-hashes.txt"))?;
 
@@ -94,6 +105,7 @@ fn canonical_output_paths(out: &Path) -> Vec<PathBuf> {
         API_QA_FILE,
         COMPLETION_FILE,
         "rust_code_repair.jsonl",
+        "rust_corpus.parquet",
         "corpus_manifest.toml",
         "quality_report.json",
         "snapshot-hashes.txt",

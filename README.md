@@ -8,8 +8,10 @@ The current pipeline can:
 - ingest mdBook-style Markdown into concept chunks
 - ingest rustdoc JSON into API items
 - ingest local Rust source trees into code completion candidates
+- generate simple code repair examples from local Rust code items
 - validate JSONL schema and Rust code fences
 - run `cargo check` on assistant-side Rust code blocks
+- export a combined Parquet dataset
 - write a manifest, quality report, and BLAKE3 hash snapshot
 
 ## Quick Start
@@ -44,6 +46,7 @@ out/
 ├── rust_api_qa.jsonl
 ├── rust_code_completion.jsonl
 ├── rust_code_repair.jsonl
+├── rust_corpus.parquet
 ├── corpus_manifest.toml
 ├── quality_report.json
 └── snapshot-hashes.txt
@@ -84,8 +87,10 @@ cargo run -- ingest-rustdoc --input fixtures/rustdoc_sample.json --output work/a
 cargo run -- generate-api-qa --input work/api_items.jsonl --output out/rust_api_qa.jsonl
 cargo run -- ingest-crates --input fixtures/sample_crate --output work/code_items.jsonl
 cargo run -- generate-completion --input work/code_items.jsonl --output out/rust_code_completion.jsonl
+cargo run -- generate-repair --input work/code_items.jsonl --output out/rust_code_repair.jsonl
 cargo run -- validate-code --input out/rust_code_completion.jsonl --output out/rust_code_completion.jsonl
 cargo run -- validate --input out --report out/quality_report.json
+cargo run -- export-parquet --input out --output out/rust_corpus.parquet
 cargo run -- manifest --input out --output out/corpus_manifest.toml
 cargo run -- hashes --input out --output out/snapshot-hashes.txt
 ```
@@ -104,6 +109,7 @@ For code entries:
 - `metadata.cargo_check = null` means Cargo validation has not been run for that entry.
 
 Some crate-derived snippets can fail standalone validation because they depend on original crate context. This is expected until crate-context validation is added.
+For crate-derived entries, the pipeline records each code item's source crate root when it can find a nearby `Cargo.toml`. Cargo validation checks that source crate with an isolated target directory and can mark generated completion and repair entries as validated from that context. Standalone snippet validation remains the fallback.
 
 ## Manifest And Report
 
@@ -116,6 +122,7 @@ Some crate-derived snippets can fail standalone validation because they depend o
 - per-output entry count
 - per-output BLAKE3 hash
 - per-output Cargo-check counts
+It also records `rust_corpus.parquet` when the Parquet export exists.
 
 `quality_report.json` records:
 
@@ -152,7 +159,6 @@ cargo run -- pipeline `
 
 ## Current Limits
 
-- Parquet export is not implemented yet.
-- Code repair generation is still sample-only.
-- Cargo validation currently validates snippets in temporary standalone crates, not inside the original source crate.
+- Code repair generation currently uses simple deterministic mutations, starting with missing closing braces.
+- Crate-context validation depends on finding a local `Cargo.toml`; snippets outside a Cargo package still use standalone validation.
 - The corpus is designed for curated fine-tuning data, not broad raw-code pretraining.

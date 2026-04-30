@@ -76,7 +76,7 @@ pub fn write_manifest(input: &Path, output: &Path) -> Result<()> {
     }
 
     let report = validate_input(input)?;
-    let outputs = output_files(input)?;
+    let outputs = output_files(input, &report)?;
     let summary = SummarySection {
         generated_at: chrono::Utc::now().to_rfc3339(),
         total_entries: report.total_entries,
@@ -129,7 +129,10 @@ pub fn write_manifest(input: &Path, output: &Path) -> Result<()> {
     Ok(())
 }
 
-fn output_files(input: &Path) -> Result<BTreeMap<String, OutputFile>> {
+fn output_files(
+    input: &Path,
+    report: &crate::quality::report::QualityReport,
+) -> Result<BTreeMap<String, OutputFile>> {
     let mut files = jsonl_files(input)?;
     files.sort();
 
@@ -163,6 +166,26 @@ fn output_files(input: &Path) -> Result<BTreeMap<String, OutputFile>> {
                 cargo_check_passed,
                 cargo_check_failed,
                 cargo_check_not_run,
+            },
+        );
+    }
+
+    let parquet = input.join("rust_corpus.parquet");
+    if parquet.exists() {
+        outputs.insert(
+            "rust_corpus_parquet".to_string(),
+            OutputFile {
+                path: "rust_corpus.parquet".to_string(),
+                bytes: std::fs::metadata(&parquet)
+                    .with_context(|| format!("stat {}", parquet.display()))?
+                    .len(),
+                blake3: blake3_file(&parquet)?,
+                entries: report.total_entries,
+                schema_valid_entries: report.valid_entries,
+                schema_invalid_entries: report.invalid_entries,
+                cargo_check_passed: *report.counts_by_cargo_check.get("passed").unwrap_or(&0),
+                cargo_check_failed: *report.counts_by_cargo_check.get("failed").unwrap_or(&0),
+                cargo_check_not_run: *report.counts_by_cargo_check.get("not_run").unwrap_or(&0),
             },
         );
     }

@@ -51,6 +51,9 @@ fn main() -> Result<()> {
         Command::GenerateCompletion { input, output } => {
             rust_corpus_forge::generate::completion::generate_completion(&input, &output)?;
         }
+        Command::GenerateRepair { input, output } => {
+            rust_corpus_forge::generate::repair::generate_repair(&input, &output)?;
+        }
         Command::Validate { input, report } => {
             rust_corpus_forge::quality::report::validate_to_report(&input, &report)?;
         }
@@ -65,6 +68,9 @@ fn main() -> Result<()> {
         }
         Command::Manifest { input, output } => {
             rust_corpus_forge::export::manifest::write_manifest(&input, &output)?;
+        }
+        Command::ExportParquet { input, output } => {
+            rust_corpus_forge::export::parquet::export_parquet(&input, &output)?;
         }
         Command::Hashes { input, output } => {
             rust_corpus_forge::export::hashes::write_hashes(&input, &output)?;

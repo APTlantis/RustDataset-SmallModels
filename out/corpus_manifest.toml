@@ -8,14 +8,14 @@ target_model = "TinyLlama-1.1B-Chat-v1.0"
 created_at = "2026-04-30T00:00:00Z"
 
 [summary]
-generated_at = "2026-04-30T21:31:22.224000400+00:00"
-total_entries = 18
-schema_valid_entries = 18
+generated_at = "2026-04-30T21:40:32.356666200+00:00"
+total_entries = 22
+schema_valid_entries = 22
 schema_invalid_entries = 0
-validated_entries = 4
-not_validated_entries = 14
-cargo_check_passed = 4
-cargo_check_failed = 4
+validated_entries = 12
+not_validated_entries = 10
+cargo_check_passed = 12
+cargo_check_failed = 0
 cargo_check_not_run = 10
 
 [outputs.rust_api_qa]
@@ -31,36 +31,47 @@ cargo_check_not_run = 2
 
 [outputs.rust_code_completion]
 path = "rust_code_completion.jsonl"
-bytes = 6129
-blake3 = "4dbf635eafb3ba1af971733b089c2945786c617ec84964f44e75c7934d0883a7"
+bytes = 6121
+blake3 = "cbfcae50e94bb29c140767e6832fd14a19c956df86c9b4b73bed1d73f23a7e9a"
 entries = 6
 schema_valid_entries = 6
 schema_invalid_entries = 0
-cargo_check_passed = 2
-cargo_check_failed = 4
+cargo_check_passed = 6
+cargo_check_failed = 0
 cargo_check_not_run = 0
 
 [outputs.rust_code_repair]
 path = "rust_code_repair.jsonl"
-bytes = 1974
-blake3 = "743aaec855e13ded89a2617de999eb06fa53c0bc858105870e4bba2dd42fae84"
-entries = 2
-schema_valid_entries = 2
+bytes = 6476
+blake3 = "e94c00fdbf89d43f06d5813ca5bcd7e7bb0a41fd32cc4b4f9ebf3dbdeaa22cf8"
+entries = 6
+schema_valid_entries = 6
 schema_invalid_entries = 0
-cargo_check_passed = 2
+cargo_check_passed = 6
 cargo_check_failed = 0
 cargo_check_not_run = 0
 
 [outputs.rust_concepts_sft]
 path = "rust_concepts_sft.jsonl"
-bytes = 7153
-blake3 = "aba6037157040f5ad65524ad32ab6ddba8acbf91144c1c6dfc9bd8718c5d11ad"
+bytes = 7190
+blake3 = "3a929f922711132b47a7245be1478b6ef4f66fbfa0b8405f2a3b759ff478829d"
 entries = 8
 schema_valid_entries = 8
 schema_invalid_entries = 0
 cargo_check_passed = 0
 cargo_check_failed = 0
 cargo_check_not_run = 8
+
+[outputs.rust_corpus_parquet]
+path = "rust_corpus.parquet"
+bytes = 21741
+blake3 = "9585c606f53e822553b27f92d418d4c7797191079d2171ebc60e6757bcda5d13"
+entries = 22
+schema_valid_entries = 22
+schema_invalid_entries = 0
+cargo_check_passed = 12
+cargo_check_failed = 0
+cargo_check_not_run = 10
 
 [quality]
 requires_license = true

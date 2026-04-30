@@ -83,6 +83,7 @@ mod tests {
         let item = CodeItem {
             id: "code-item-000001".to_string(),
             source_path: "src/lib.rs".to_string(),
+            source_root: None,
             crate_name: Some("sample_crate".to_string()),
             item_kind: CodeItemKind::Function,
             code: "pub fn add(a: i32, b: i32) -> i32 {\n    let total = a + b;\n    total\n}"

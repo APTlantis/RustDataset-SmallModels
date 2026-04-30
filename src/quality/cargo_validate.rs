@@ -1,9 +1,10 @@
-use std::{path::Path, process::Command};
+use std::{collections::BTreeMap, path::Path, process::Command};
 
 use anyhow::{Context, Result};
 
 use crate::{
     export::jsonl::{read_jsonl, write_jsonl},
+    ingest::crates_mirror::read_code_items,
     quality::code_blocks::assistant_rust_blocks,
     schema::DatasetEntry,
 };
@@ -15,6 +16,67 @@ pub fn validate_code_jsonl(
 ) -> Result<Vec<DatasetEntry>> {
     let mut entries = read_jsonl(input)?;
     validate_entries(&mut entries, work_dir)?;
+    write_jsonl(output, &entries)?;
+    Ok(entries)
+}
+
+pub fn validate_code_jsonl_with_source_context(
+    input: &Path,
+    output: &Path,
+    work_dir: &Path,
+    source_root: Option<&Path>,
+) -> Result<Vec<DatasetEntry>> {
+    let mut entries = read_jsonl(input)?;
+    validate_entries_with_source_context(&mut entries, work_dir, source_root)?;
+    write_jsonl(output, &entries)?;
+    Ok(entries)
+}
+
+pub fn validate_code_jsonl_with_code_items(
+    input: &Path,
+    output: &Path,
+    work_dir: &Path,
+    code_items: &Path,
+) -> Result<Vec<DatasetEntry>> {
+    let mut entries = read_jsonl(input)?;
+    let items = read_code_items(code_items)?;
+    let source_roots = items
+        .into_iter()
+        .filter_map(|item| item.source_root.map(|root| (item.id, root)))
+        .collect::<BTreeMap<_, _>>();
+    let mut crate_results = BTreeMap::<String, bool>::new();
+
+    for entry in &mut entries {
+        let item_id = source_item_id(&entry.id);
+        let source_root = item_id
+            .as_ref()
+            .and_then(|id| source_roots.get(id))
+            .map(Path::new);
+
+        if let Some(source_root) = source_root {
+            let target_dir = work_dir
+                .join("source_crate_targets")
+                .join(safe_key(&source_root.display().to_string()));
+            let result = if let Some(result) = crate_results.get(&source_root.display().to_string())
+            {
+                *result
+            } else {
+                let result = source_root.join("Cargo.toml").exists()
+                    && cargo_check_crate_with_target(source_root, &target_dir)?;
+                crate_results.insert(source_root.display().to_string(), result);
+                result
+            };
+
+            if result {
+                entry.metadata.cargo_check = Some(true);
+                entry.metadata.validated = true;
+                continue;
+            }
+        }
+
+        validate_entries(std::slice::from_mut(entry), work_dir)?;
+    }
+
     write_jsonl(output, &entries)?;
     Ok(entries)
 }
@@ -43,6 +105,88 @@ pub fn validate_entries(entries: &mut [DatasetEntry], work_dir: &Path) -> Result
     }
 
     Ok(())
+}
+
+pub fn validate_entries_with_source_context(
+    entries: &mut [DatasetEntry],
+    work_dir: &Path,
+    source_root: Option<&Path>,
+) -> Result<()> {
+    if let Some(source_root) = source_root
+        && source_root.join("Cargo.toml").exists()
+        && cargo_check_crate(source_root)?
+    {
+        for entry in entries {
+            entry.metadata.cargo_check = Some(true);
+            entry.metadata.validated = true;
+        }
+        return Ok(());
+    }
+
+    validate_entries(entries, work_dir)
+}
+
+pub fn cargo_check_crate(crate_root: &Path) -> Result<bool> {
+    let target_dir = std::env::temp_dir().join(format!(
+        "rust-corpus-forge-crate-target-{}",
+        safe_key(&crate_root.display().to_string())
+    ));
+    let result = cargo_check_crate_with_target(crate_root, &target_dir);
+    if target_dir.exists() {
+        std::fs::remove_dir_all(&target_dir)
+            .with_context(|| format!("removing {}", target_dir.display()))?;
+    }
+    result
+}
+
+fn cargo_check_crate_with_target(crate_root: &Path, target_dir: &Path) -> Result<bool> {
+    let lockfile = crate_root.join("Cargo.lock");
+    let lockfile_existed = lockfile.exists();
+    let target_dir = if target_dir.is_absolute() {
+        target_dir.to_path_buf()
+    } else {
+        std::env::current_dir()?.join(target_dir)
+    };
+
+    let output = Command::new("cargo")
+        .arg("check")
+        .arg("--quiet")
+        .current_dir(crate_root)
+        .env("CARGO_TARGET_DIR", &target_dir)
+        .output()
+        .with_context(|| {
+            format!(
+                "running cargo check in source crate {}",
+                crate_root.display()
+            )
+        })?;
+
+    if !lockfile_existed && lockfile.exists() {
+        std::fs::remove_file(&lockfile)
+            .with_context(|| format!("removing generated {}", lockfile.display()))?;
+    }
+
+    Ok(output.status.success())
+}
+
+fn safe_key(value: &str) -> String {
+    value
+        .chars()
+        .map(|character| {
+            if character.is_ascii_alphanumeric() {
+                character
+            } else {
+                '_'
+            }
+        })
+        .collect()
+}
+
+fn source_item_id(entry_id: &str) -> Option<String> {
+    entry_id
+        .strip_prefix("rust-completion-source-")
+        .or_else(|| entry_id.strip_prefix("rust-repair-source-"))
+        .map(|suffix| format!("code-item-{suffix}"))
 }
 
 pub fn cargo_check_snippet(code: &str, project_dir: &Path) -> Result<bool> {

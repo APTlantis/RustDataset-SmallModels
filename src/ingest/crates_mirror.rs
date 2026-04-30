@@ -16,6 +16,7 @@ const MAX_SNIPPET_LINES: usize = 80;
 pub struct CodeItem {
     pub id: String,
     pub source_path: String,
+    pub source_root: Option<String>,
     pub crate_name: Option<String>,
     pub item_kind: CodeItemKind,
     pub code: String,
@@ -54,7 +55,10 @@ pub fn collect_code_items(input: &Path) -> Result<Vec<CodeItem>> {
             continue;
         }
 
-        let crate_name = crate_name_for_file(input, &file);
+        let crate_root = crate_root_for_file(input, &file);
+        let crate_name = crate_root
+            .as_ref()
+            .and_then(|root| crate_name_from_manifest(&root.join("Cargo.toml")));
         let source_path = display_name(input, &file);
         let mut snippets = function_snippets(&raw);
         if snippets.is_empty() && is_snippet_sized(&raw) {
@@ -70,6 +74,7 @@ pub fn collect_code_items(input: &Path) -> Result<Vec<CodeItem>> {
             items.push(CodeItem {
                 id: String::new(),
                 source_path: source_path.clone(),
+                source_root: crate_root.as_ref().map(|root| root.display().to_string()),
                 crate_name: crate_name.clone(),
                 item_kind,
                 topics: topics_from_path(&source_path, &code),
@@ -308,16 +313,18 @@ fn topics_from_path(source_path: &str, code: &str) -> Vec<String> {
     topics
 }
 
-fn crate_name_for_file(root: &Path, file: &Path) -> Option<String> {
+fn crate_root_for_file(root: &Path, file: &Path) -> Option<PathBuf> {
     if root.is_file() {
         return None;
     }
 
-    let manifest = file.ancestors().find_map(|ancestor| {
+    file.ancestors().find_map(|ancestor| {
         let manifest = ancestor.join("Cargo.toml");
-        manifest.exists().then_some(manifest)
-    })?;
+        manifest.exists().then_some(ancestor.to_path_buf())
+    })
+}
 
+fn crate_name_from_manifest(manifest: &Path) -> Option<String> {
     let raw = std::fs::read_to_string(manifest).ok()?;
     raw.lines()
         .map(str::trim)
@@ -426,6 +433,7 @@ mod tests {
         assert_eq!(items.len(), 1);
         assert_eq!(items[0].id, "code-item-000000");
         assert_eq!(items[0].crate_name.as_deref(), Some("sample_crate"));
+        assert!(items[0].source_root.is_some());
 
         fs::remove_dir_all(root).unwrap();
     }
