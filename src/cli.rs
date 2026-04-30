@@ -26,6 +26,13 @@ pub enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Extract small Rust code items from local crates or source trees.
+    IngestCrates {
+        #[arg(long)]
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
     /// Generate deterministic hand-authored sample JSONL outputs.
     GenerateSamples {
         #[arg(long)]
@@ -40,6 +47,13 @@ pub enum Command {
     },
     /// Generate API QA JSONL from ingested rustdoc API items.
     GenerateApiQa {
+        #[arg(long)]
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Generate code completion JSONL from ingested Rust code items.
+    GenerateCompletion {
         #[arg(long)]
         input: PathBuf,
         #[arg(long)]

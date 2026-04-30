@@ -12,6 +12,9 @@ fn main() -> Result<()> {
         Command::IngestRustdoc { input, output } => {
             rust_corpus_forge::ingest::rustdoc_json::ingest_rustdoc(&input, &output)?;
         }
+        Command::IngestCrates { input, output } => {
+            rust_corpus_forge::ingest::crates_mirror::ingest_crates(&input, &output)?;
+        }
         Command::GenerateSamples { output } => {
             rust_corpus_forge::generate::samples::generate_samples(&output)?;
         }
@@ -20,6 +23,9 @@ fn main() -> Result<()> {
         }
         Command::GenerateApiQa { input, output } => {
             rust_corpus_forge::generate::api_qa::generate_api_qa(&input, &output)?;
+        }
+        Command::GenerateCompletion { input, output } => {
+            rust_corpus_forge::generate::completion::generate_completion(&input, &output)?;
         }
         Command::Validate { input, report } => {
             rust_corpus_forge::quality::report::validate_to_report(&input, &report)?;
