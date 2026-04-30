@@ -1,0 +1,62 @@
+{
+  "input": "out",
+  "total_entries": 8,
+  "valid_entries": 8,
+  "invalid_entries": 0,
+  "files": {
+    "rust_api_qa.jsonl": {
+      "entries": 2,
+      "valid_entries": 2,
+      "invalid_entries": 0
+    },
+    "rust_code_completion.jsonl": {
+      "entries": 2,
+      "valid_entries": 2,
+      "invalid_entries": 0
+    },
+    "rust_code_repair.jsonl": {
+      "entries": 2,
+      "valid_entries": 2,
+      "invalid_entries": 0
+    },
+    "rust_concepts_sft.jsonl": {
+      "entries": 2,
+      "valid_entries": 2,
+      "invalid_entries": 0
+    }
+  },
+  "counts_by_type": {
+    "api_qa": 2,
+    "code_completion": 2,
+    "code_repair": 2,
+    "concept_qa": 2
+  },
+  "counts_by_validation_status": {
+    "validated": 8
+  },
+  "counts_by_topic": {
+    "binding": 1,
+    "borrowing": 1,
+    "clone": 1,
+    "closure": 1,
+    "collect": 1,
+    "error-handling": 1,
+    "fallback": 1,
+    "filter": 1,
+    "iterator": 2,
+    "map": 1,
+    "memory": 1,
+    "move": 2,
+    "mutability": 1,
+    "option": 1,
+    "ownership": 2,
+    "parse": 1,
+    "references": 1,
+    "result": 1,
+    "unwrap_or": 1
+  },
+  "counts_by_license": {
+    "MIT OR Apache-2.0": 8
+  },
+  "errors": []
+}
