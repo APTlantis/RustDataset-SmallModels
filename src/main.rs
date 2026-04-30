@@ -9,11 +9,17 @@ fn main() -> Result<()> {
         Command::IngestMdbook { input, output } => {
             rust_corpus_forge::ingest::mdbook::ingest_mdbook(&input, &output)?;
         }
+        Command::IngestRustdoc { input, output } => {
+            rust_corpus_forge::ingest::rustdoc_json::ingest_rustdoc(&input, &output)?;
+        }
         Command::GenerateSamples { output } => {
             rust_corpus_forge::generate::samples::generate_samples(&output)?;
         }
         Command::GenerateSft { input, output } => {
             rust_corpus_forge::generate::concepts::generate_sft_from_chunks(&input, &output)?;
+        }
+        Command::GenerateApiQa { input, output } => {
+            rust_corpus_forge::generate::api_qa::generate_api_qa(&input, &output)?;
         }
         Command::Validate { input, report } => {
             rust_corpus_forge::quality::report::validate_to_report(&input, &report)?;

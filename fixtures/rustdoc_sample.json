@@ -1,0 +1,38 @@
+{
+  "crate_version": "1.0.0",
+  "index": {
+    "0:0": {
+      "name": "map",
+      "path": ["sample", "Iterator"],
+      "docs": "Transforms each item with a closure. The returned iterator is lazy.",
+      "inner": {
+        "function": {
+          "decl": {
+            "inputs": [
+              ["self", { "borrowed_ref": {} }],
+              ["f", { "generic": "F" }]
+            ]
+          }
+        }
+      }
+    },
+    "0:1": {
+      "name": "Config",
+      "path": ["sample"],
+      "docs": "Configuration values used by the sample crate.",
+      "inner": {
+        "struct": {
+          "fields": []
+        }
+      }
+    },
+    "0:2": {
+      "name": "hidden_import",
+      "path": ["sample"],
+      "docs": "",
+      "inner": {
+        "import": {}
+      }
+    }
+  }
+}

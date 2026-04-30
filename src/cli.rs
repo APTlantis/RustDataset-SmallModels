@@ -19,6 +19,13 @@ pub enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Extract documented API items from rustdoc JSON.
+    IngestRustdoc {
+        #[arg(long)]
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
     /// Generate deterministic hand-authored sample JSONL outputs.
     GenerateSamples {
         #[arg(long)]
@@ -26,6 +33,13 @@ pub enum Command {
     },
     /// Generate concept SFT JSONL from mdBook chunks.
     GenerateSft {
+        #[arg(long)]
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Generate API QA JSONL from ingested rustdoc API items.
+    GenerateApiQa {
         #[arg(long)]
         input: PathBuf,
         #[arg(long)]

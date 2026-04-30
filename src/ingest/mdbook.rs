@@ -212,6 +212,14 @@ pub fn topics_from_heading(heading: &str) -> Vec<String> {
 }
 
 fn display_name(root: &Path, file: &Path) -> String {
+    if root.is_file() {
+        return file
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .to_string();
+    }
+
     file.strip_prefix(root)
         .unwrap_or(file)
         .display()

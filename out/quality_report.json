@@ -1,10 +1,15 @@
 {
   "input": "out",
-  "total_entries": 38,
-  "valid_entries": 38,
+  "total_entries": 40,
+  "valid_entries": 40,
   "invalid_entries": 0,
   "files": {
     "rust_api_qa.jsonl": {
+      "entries": 2,
+      "valid_entries": 2,
+      "invalid_entries": 0
+    },
+    "rust_api_qa_from_rustdoc.jsonl": {
       "entries": 2,
       "valid_entries": 2,
       "invalid_entries": 0
@@ -31,13 +36,13 @@
     }
   },
   "counts_by_type": {
-    "api_qa": 2,
+    "api_qa": 4,
     "code_completion": 2,
     "code_repair": 2,
     "concept_qa": 32
   },
   "counts_by_validation_status": {
-    "not_validated": 30,
+    "not_validated": 32,
     "validated": 8
   },
   "counts_by_topic": {
@@ -52,6 +57,7 @@
     "completion": 1,
     "concept": 1,
     "concepts": 1,
+    "config": 1,
     "core": 2,
     "crates": 1,
     "criteria": 1,
@@ -69,13 +75,13 @@
     "goals": 1,
     "hashes": 1,
     "ingest": 3,
-    "iterator": 2,
+    "iterator": 3,
     "json": 1,
     "jsonl": 1,
     "layout": 1,
     "learning": 1,
     "manifest": 2,
-    "map": 1,
+    "map": 2,
     "mdbook": 1,
     "memory": 1,
     "milestone": 7,
@@ -103,6 +109,7 @@
     "rules": 1,
     "rust": 3,
     "rustdoc": 1,
+    "sample": 2,
     "schema": 1,
     "shape": 1,
     "standard": 1,
@@ -121,7 +128,7 @@
     "writer": 1
   },
   "counts_by_license": {
-    "MIT OR Apache-2.0": 38
+    "MIT OR Apache-2.0": 40
   },
   "errors": []
 }
