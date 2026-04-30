@@ -12,8 +12,22 @@ pub struct Cli {
 
 #[derive(Debug, Subcommand)]
 pub enum Command {
+    /// Split Rust Book-style Markdown into source chunks.
+    IngestMdbook {
+        #[arg(long)]
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
     /// Generate deterministic hand-authored sample JSONL outputs.
     GenerateSamples {
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Generate concept SFT JSONL from mdBook chunks.
+    GenerateSft {
+        #[arg(long)]
+        input: PathBuf,
         #[arg(long)]
         output: PathBuf,
     },
