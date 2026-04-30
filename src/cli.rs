@@ -66,6 +66,15 @@ pub enum Command {
         #[arg(long)]
         report: PathBuf,
     },
+    /// Run cargo check on assistant Rust code blocks and write updated JSONL.
+    ValidateCode {
+        #[arg(long)]
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+        #[arg(long, default_value = "work/cargo_validate")]
+        work_dir: PathBuf,
+    },
     /// Write a corpus manifest TOML file.
     Manifest {
         #[arg(long)]

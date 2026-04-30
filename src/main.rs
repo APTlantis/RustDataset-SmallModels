@@ -30,6 +30,15 @@ fn main() -> Result<()> {
         Command::Validate { input, report } => {
             rust_corpus_forge::quality::report::validate_to_report(&input, &report)?;
         }
+        Command::ValidateCode {
+            input,
+            output,
+            work_dir,
+        } => {
+            rust_corpus_forge::quality::cargo_validate::validate_code_jsonl(
+                &input, &output, &work_dir,
+            )?;
+        }
         Command::Manifest { input, output } => {
             rust_corpus_forge::export::manifest::write_manifest(&input, &output)?;
         }
