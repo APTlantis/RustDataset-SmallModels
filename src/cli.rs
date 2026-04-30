@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use clap::{Parser, Subcommand};
+use clap::{ArgAction, Parser, Subcommand};
 
 #[derive(Debug, Parser)]
 #[command(name = "rust-corpus-forge")]
@@ -12,6 +12,30 @@ pub struct Cli {
 
 #[derive(Debug, Subcommand)]
 pub enum Command {
+    /// Run the canonical dataset pipeline end to end.
+    Pipeline {
+        #[arg(long)]
+        mdbook: Option<PathBuf>,
+        #[arg(long)]
+        rustdoc: Option<PathBuf>,
+        #[arg(long)]
+        crates: Option<PathBuf>,
+        #[arg(long, default_value = "out")]
+        out: PathBuf,
+        #[arg(long, default_value = "work")]
+        work: PathBuf,
+        #[arg(long, action = ArgAction::SetTrue)]
+        clean: bool,
+        #[arg(long = "no-validate-code", action = ArgAction::SetFalse, default_value_t = true)]
+        validate_code: bool,
+    },
+    /// Remove canonical generated outputs and work files.
+    Clean {
+        #[arg(long, default_value = "out")]
+        out: PathBuf,
+        #[arg(long, default_value = "work")]
+        work: PathBuf,
+    },
     /// Split Rust Book-style Markdown into source chunks.
     IngestMdbook {
         #[arg(long)]

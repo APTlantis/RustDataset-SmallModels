@@ -1,7 +1,7 @@
 {
   "input": "out",
-  "total_entries": 52,
-  "valid_entries": 52,
+  "total_entries": 40,
+  "valid_entries": 40,
   "invalid_entries": 0,
   "files": {
     "rust_api_qa.jsonl": {
@@ -9,22 +9,7 @@
       "valid_entries": 2,
       "invalid_entries": 0
     },
-    "rust_api_qa_from_rustdoc.jsonl": {
-      "entries": 2,
-      "valid_entries": 2,
-      "invalid_entries": 0
-    },
     "rust_code_completion.jsonl": {
-      "entries": 2,
-      "valid_entries": 2,
-      "invalid_entries": 0
-    },
-    "rust_code_completion_from_sources.jsonl": {
-      "entries": 6,
-      "valid_entries": 6,
-      "invalid_entries": 0
-    },
-    "rust_code_completion_validated.jsonl": {
       "entries": 6,
       "valid_entries": 6,
       "invalid_entries": 0
@@ -34,36 +19,28 @@
       "valid_entries": 2,
       "invalid_entries": 0
     },
-    "rust_concepts_from_overview.jsonl": {
+    "rust_concepts_sft.jsonl": {
       "entries": 30,
       "valid_entries": 30,
-      "invalid_entries": 0
-    },
-    "rust_concepts_sft.jsonl": {
-      "entries": 2,
-      "valid_entries": 2,
       "invalid_entries": 0
     }
   },
   "counts_by_type": {
-    "api_qa": 4,
-    "code_completion": 14,
+    "api_qa": 2,
+    "code_completion": 6,
     "code_repair": 2,
-    "concept_qa": 32
+    "concept_qa": 30
   },
   "counts_by_validation_status": {
-    "not_validated": 42,
-    "validated": 10
+    "not_validated": 36,
+    "validated": 4
   },
   "counts_by_topic": {
     "api": 2,
     "binding": 1,
-    "borrowing": 1,
     "cli": 1,
     "clone": 1,
-    "closure": 1,
     "code": 4,
-    "collect": 1,
     "completion": 1,
     "concept": 1,
     "concepts": 1,
@@ -73,10 +50,7 @@
     "criteria": 1,
     "dataset": 1,
     "design": 1,
-    "error-handling": 1,
     "example": 3,
-    "fallback": 1,
-    "filter": 1,
     "filters": 1,
     "for": 1,
     "format": 1,
@@ -85,28 +59,25 @@
     "goals": 1,
     "hashes": 1,
     "ingest": 3,
-    "integration": 2,
-    "iterator": 3,
+    "integration": 1,
+    "iterator": 1,
     "json": 1,
     "jsonl": 1,
     "layout": 1,
     "learning": 1,
-    "lib": 8,
-    "main": 2,
+    "lib": 4,
+    "main": 1,
     "manifest": 2,
-    "map": 2,
+    "map": 1,
     "mdbook": 1,
-    "memory": 1,
     "milestone": 7,
     "module": 1,
-    "move": 2,
+    "move": 1,
     "mutability": 1,
     "non": 1,
-    "option": 1,
     "outputs": 1,
-    "ownership": 2,
+    "ownership": 1,
     "parquet": 1,
-    "parse": 1,
     "philosophy": 1,
     "primary": 1,
     "prompts": 1,
@@ -114,11 +85,9 @@
     "qa": 3,
     "quality": 2,
     "refactor": 1,
-    "references": 1,
     "repair": 2,
     "report": 1,
     "required": 1,
-    "result": 1,
     "rules": 1,
     "rust": 3,
     "rustdoc": 1,
@@ -132,19 +101,18 @@
     "suggested": 1,
     "supported": 1,
     "system": 1,
-    "test": 2,
-    "tests": 2,
+    "test": 1,
+    "tests": 1,
     "text": 1,
     "type": 1,
-    "unwrap_or": 1,
     "v1": 1,
     "validation": 2,
     "values": 1,
-    "vec": 2,
+    "vec": 1,
     "writer": 1
   },
   "counts_by_license": {
-    "MIT OR Apache-2.0": 52
+    "MIT OR Apache-2.0": 40
   },
   "errors": []
 }

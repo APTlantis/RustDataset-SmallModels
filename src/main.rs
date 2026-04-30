@@ -6,6 +6,30 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
+        Command::Pipeline {
+            mdbook,
+            rustdoc,
+            crates,
+            out,
+            work,
+            clean,
+            validate_code,
+        } => {
+            rust_corpus_forge::pipeline::run_pipeline(
+                rust_corpus_forge::pipeline::PipelineConfig {
+                    mdbook,
+                    rustdoc,
+                    crates,
+                    out,
+                    work,
+                    clean,
+                    validate_code,
+                },
+            )?;
+        }
+        Command::Clean { out, work } => {
+            rust_corpus_forge::pipeline::clean_generated(&out, &work)?;
+        }
         Command::IngestMdbook { input, output } => {
             rust_corpus_forge::ingest::mdbook::ingest_mdbook(&input, &output)?;
         }
