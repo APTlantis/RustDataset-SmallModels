@@ -8,7 +8,13 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from prepare_rust_train import dataset_files, filter_invalid_entries, invalid_entry_ids, read_entries
+from prepare_rust_train import (
+    dataset_files,
+    filter_invalid_entries,
+    invalid_entry_ids,
+    read_entries,
+    sample_entries,
+)
 
 
 def write_entry(path: Path, entry_id: str) -> None:
@@ -83,6 +89,24 @@ class PrepareRustTrainTests(unittest.TestCase):
                 [("rust_alpha.jsonl", "good"), ("rust_beta.jsonl", "bad")],
                 [(entry["_source_file"], entry["id"]) for entry in filtered],
             )
+
+    def test_max_examples_samples_across_entry_types(self) -> None:
+        entries = [
+            {"id": f"completion-{index}", "type": "code_completion"}
+            for index in range(10)
+        ] + [
+            {"id": f"repair-{index}", "type": "code_repair"}
+            for index in range(10)
+        ] + [
+            {"id": f"concept-{index}", "type": "concept_qa"}
+            for index in range(10)
+        ]
+
+        sampled = sample_entries(entries, 6, seed=42)
+        sampled_types = {entry["type"] for entry in sampled}
+
+        self.assertEqual({"code_completion", "code_repair", "concept_qa"}, sampled_types)
+        self.assertEqual(6, len(sampled))
 
 
 if __name__ == "__main__":

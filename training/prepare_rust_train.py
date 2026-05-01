@@ -8,6 +8,7 @@ import json
 import random
 import sys
 import tomllib
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -108,6 +109,39 @@ def filter_invalid_entries(entries: list[dict[str, Any]], invalid_ids: set[tuple
     ]
 
 
+def sample_entries(entries: list[dict[str, Any]], max_examples: int | None, seed: int) -> list[dict[str, Any]]:
+    if not max_examples or len(entries) <= max_examples:
+        return entries
+
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for entry in entries:
+        key = str(entry.get("type", "unknown"))
+        grouped.setdefault(key, []).append(entry)
+
+    rng = random.Random(seed)
+    for rows in grouped.values():
+        rng.shuffle(rows)
+
+    sampled: list[dict[str, Any]] = []
+    keys = sorted(grouped)
+    while len(sampled) < max_examples and keys:
+        next_keys = []
+        for key in keys:
+            rows = grouped[key]
+            if rows and len(sampled) < max_examples:
+                sampled.append(rows.pop())
+            if rows:
+                next_keys.append(key)
+        keys = next_keys
+
+    sampled.sort(key=lambda entry: str(entry.get("id", "")))
+    return sampled
+
+
+def count_types(entries: list[dict[str, Any]]) -> dict[str, int]:
+    return dict(sorted(Counter(str(entry.get("type", "unknown")) for entry in entries).items()))
+
+
 def load_tokenizer(model_name: str):
     from transformers import AutoTokenizer
 
@@ -177,8 +211,7 @@ def main() -> int:
     entries = filter_invalid_entries(entries, invalid_ids)
     filtered_invalid = before_filter - len(entries)
     valid_available = len(entries)
-    if max_examples:
-        entries = entries[: int(max_examples)]
+    entries = sample_entries(entries, int(max_examples) if max_examples else None, seed)
     capped_examples = valid_available - len(entries)
     if not entries:
         raise ValueError(f"No dataset entries found in {input_dir}")
@@ -208,6 +241,7 @@ def main() -> int:
                 "valid_available": valid_available,
                 "filtered_invalid": filtered_invalid,
                 "capped_examples": capped_examples,
+                "counts_by_type": count_types(entries),
             },
             indent=2,
         )
