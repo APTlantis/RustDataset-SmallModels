@@ -52,11 +52,16 @@ fn concept_entry_from_chunk(chunk: &MdBookChunk) -> DatasetEntry {
 fn assistant_content(chunk: &MdBookChunk) -> String {
     let summary = first_paragraph(&chunk.content)
         .unwrap_or_else(|| format!("`{}` is an important Rust topic.", chunk.heading));
-    let code = first_rust_code_block(&chunk.content).unwrap_or_else(default_code_block);
 
-    format!(
-        "{summary}\n\n```rust\n{code}\n```\n\nThis example is intentionally small so the concept stays focused."
-    )
+    if let Some(code) = first_rust_code_block(&chunk.content) {
+        format!(
+            "{summary}\n\n```rust\n{code}\n```\n\nThis example is intentionally small so the concept stays focused."
+        )
+    } else {
+        format!(
+            "{summary}\n\nThe key idea is to connect the rule to the ownership, borrowing, type, or control-flow behavior in the surrounding Rust code."
+        )
+    }
 }
 
 fn first_paragraph(content: &str) -> Option<String> {
@@ -95,10 +100,6 @@ fn first_rust_code_block(content: &str) -> Option<String> {
     }
 
     None
-}
-
-fn default_code_block() -> String {
-    "fn main() {\n    println!(\"Hello, Rust!\");\n}".to_string()
 }
 
 fn strip_markdown_links(paragraph: &str) -> String {
@@ -158,6 +159,23 @@ mod tests {
 
         assert_eq!(entries.len(), 1);
         assert_eq!(entries[0].id, "rust-concept-mdbook-000001");
+        assert!(validate_entry(&entries[0]).is_empty());
+    }
+
+    #[test]
+    fn concept_without_code_does_not_use_placeholder_hello_world() {
+        let chunk = MdBookChunk {
+            id: "mdbook-chunk-000002".to_string(),
+            source_path: "src/chapter.md".to_string(),
+            heading: "Borrowing".to_string(),
+            heading_level: 1,
+            content: "Borrowing lets code use a value without taking ownership.".to_string(),
+            topics: vec!["borrowing".to_string()],
+        };
+
+        let entries = concept_entries_from_chunks(&[chunk]);
+
+        assert!(!entries[0].messages[2].content.contains("Hello, Rust"));
         assert!(validate_entry(&entries[0]).is_empty());
     }
 }

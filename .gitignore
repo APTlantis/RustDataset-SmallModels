@@ -6,6 +6,7 @@
 /models/
 /training/data/
 /training/reports/
+/training/evals/
 __pycache__/
 /TrainingReportRepairOverfitGuardrails.md
 /external_sources/
