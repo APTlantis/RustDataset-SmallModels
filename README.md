@@ -119,6 +119,15 @@ python training/finetune_rust.py --config training/rust_cpu_smoke.toml --max-ste
 
 The default smoke config writes prepared data to `training/data/rust-smoke/` and LoRA adapters to `models/rust-tinyllama-lora-smoke/`. CPU training is intentionally configured with a small batch size and short default step count. Scale `max_steps`, corpus size, and epochs only after the smoke run is healthy.
 
+Capture a training run and summarize the curve:
+
+```powershell
+python training/finetune_rust.py --config training/rust_cpu_smoke.toml --max-steps 20 2>&1 | Tee-Object training/reports/rust-smoke-20.log
+python training/parse_training_log.py --input training/reports/rust-smoke-20.log --output training/reports/rust-smoke-20.json
+```
+
+The report includes first/last/best training metrics, eval metrics, token counts, and simple overfit hints. If the best loss lands well before the final step, grow the corpus before adding more epochs.
+
 ## Validation Semantics
 
 There are two validation layers:
