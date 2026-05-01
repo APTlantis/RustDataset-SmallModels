@@ -36,6 +36,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--config", type=Path, default=Path("training/rust_cpu_smoke.toml"))
     parser.add_argument("--input-dir", type=Path)
     parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--quality-report", type=Path)
     parser.add_argument("--model-name", type=str)
     parser.add_argument("--validation-ratio", type=float)
     parser.add_argument("--max-examples", type=int)
@@ -82,6 +83,29 @@ def read_entries(input_dir: Path, configured_files: list[str] | None = None) -> 
                 item["_source_file"] = path.name
                 entries.append(item)
     return entries
+
+
+def invalid_entry_ids(report_path: Path | None) -> set[tuple[str, str]]:
+    if report_path is None or not report_path.exists():
+        return set()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    invalid: set[tuple[str, str]] = set()
+    for error in report.get("errors", []):
+        file_name = error.get("file")
+        entry_id = error.get("id")
+        if isinstance(file_name, str) and isinstance(entry_id, str):
+            invalid.add((file_name, entry_id))
+    return invalid
+
+
+def filter_invalid_entries(entries: list[dict[str, Any]], invalid_ids: set[tuple[str, str]]) -> list[dict[str, Any]]:
+    if not invalid_ids:
+        return entries
+    return [
+        entry
+        for entry in entries
+        if (str(entry.get("_source_file", "")), str(entry.get("id", ""))) not in invalid_ids
+    ]
 
 
 def load_tokenizer(model_name: str):
@@ -131,6 +155,9 @@ def main() -> int:
     output_dir = args.output_dir or Path(
         config_get(config, "data", "prepared_dir", "training/data/rust-smoke")
     )
+    quality_report = args.quality_report
+    if quality_report is None:
+        quality_report = input_dir / "quality_report.json"
     model_name = args.model_name or config_get(
         config, "model", "name", "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
     )
@@ -145,8 +172,14 @@ def main() -> int:
         seed = int(config_get(config, "training", "seed", 42))
 
     entries = read_entries(input_dir, configured_dataset_files(config))
+    invalid_ids = invalid_entry_ids(quality_report)
+    before_filter = len(entries)
+    entries = filter_invalid_entries(entries, invalid_ids)
+    filtered_invalid = before_filter - len(entries)
+    valid_available = len(entries)
     if max_examples:
         entries = entries[: int(max_examples)]
+    capped_examples = valid_available - len(entries)
     if not entries:
         raise ValueError(f"No dataset entries found in {input_dir}")
 
@@ -172,6 +205,9 @@ def main() -> int:
                 "validation": len(validation_rows),
                 "chat_template": tokenizer is not None,
                 "input_examples": len(rows),
+                "valid_available": valid_available,
+                "filtered_invalid": filtered_invalid,
+                "capped_examples": capped_examples,
             },
             indent=2,
         )

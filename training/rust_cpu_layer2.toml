@@ -1,0 +1,44 @@
+[model]
+name = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+
+[data]
+input_dir = "out_layer2"
+prepared_dir = "training/data/rust-layer2"
+train_file = "training/data/rust-layer2/train.jsonl"
+validation_file = "training/data/rust-layer2/validation.jsonl"
+validation_ratio = 0.15
+max_examples = 1024
+
+[training]
+output_dir = "models/rust-tinyllama-lora-layer2"
+seed = 42
+force_cpu = true
+max_steps = 40
+num_train_epochs = 1
+micro_batch_size = 1
+gradient_accumulation_steps = 4
+learning_rate = 0.00015
+max_seq_length = 512
+logging_steps = 1
+save_steps = 10
+eval_steps = 10
+save_total_limit = 2
+load_best_model_at_end = true
+metric_for_best_model = "eval_loss"
+greater_is_better = false
+early_stopping_patience = 0
+early_stopping_threshold = 0.0
+
+[lora]
+r = 16
+alpha = 32
+dropout = 0.05
+target_modules = [
+  "q_proj",
+  "k_proj",
+  "v_proj",
+  "o_proj",
+  "gate_proj",
+  "up_proj",
+  "down_proj",
+]

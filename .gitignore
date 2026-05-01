@@ -8,3 +8,6 @@
 /training/reports/
 __pycache__/
 /TrainingReportRepairOverfitGuardrails.md
+/external_sources/
+/out_layer2/
+/work_layer2/

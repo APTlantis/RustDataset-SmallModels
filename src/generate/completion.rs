@@ -28,7 +28,6 @@ fn completion_entry_from_item(item: &CodeItem) -> DatasetEntry {
     metadata.file_path = Some(item.source_path.clone());
     metadata.quality_score = 0.88;
     metadata.validated = false;
-    metadata.cargo_check = Some(false);
 
     DatasetEntry {
         id: item.id.replace("code-item", "rust-completion-source"),

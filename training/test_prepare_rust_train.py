@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from prepare_rust_train import dataset_files, read_entries
+from prepare_rust_train import dataset_files, filter_invalid_entries, invalid_entry_ids, read_entries
 
 
 def write_entry(path: Path, entry_id: str) -> None:
@@ -52,6 +52,37 @@ class PrepareRustTrainTests(unittest.TestCase):
             entries = read_entries(root, ["rust_beta.jsonl"])
 
             self.assertEqual(["beta"], [entry["id"] for entry in entries])
+
+    def test_quality_report_filters_invalid_entries_by_file_and_id(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_root:
+            root = Path(raw_root)
+            report = root / "quality_report.json"
+            report.write_text(
+                json.dumps(
+                    {
+                        "errors": [
+                            {
+                                "file": "rust_alpha.jsonl",
+                                "id": "bad",
+                                "message": "Rust code fences must open with ```rust",
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            entries = [
+                {"id": "good", "_source_file": "rust_alpha.jsonl"},
+                {"id": "bad", "_source_file": "rust_alpha.jsonl"},
+                {"id": "bad", "_source_file": "rust_beta.jsonl"},
+            ]
+
+            filtered = filter_invalid_entries(entries, invalid_entry_ids(report))
+
+            self.assertEqual(
+                [("rust_alpha.jsonl", "good"), ("rust_beta.jsonl", "bad")],
+                [(entry["_source_file"], entry["id"]) for entry in filtered],
+            )
 
 
 if __name__ == "__main__":

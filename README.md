@@ -128,6 +128,15 @@ python training/parse_training_log.py --input training/reports/rust-smoke-20.log
 
 The report includes first/last/best training metrics, eval metrics, token counts, and simple overfit hints. If the best loss lands well before the final step, grow the corpus before adding more epochs.
 
+Build the broader layer-2 dataset from external Rust learning sources:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File training/build_layer2_dataset.ps1
+python training/finetune_rust.py --config training/rust_cpu_layer2.toml --dry-run
+```
+
+The layer-2 builder clones public Rust learning repositories into ignored `external_sources/`, writes corpus files to ignored `out_layer2/`, and prepares SFT JSONL in ignored `training/data/rust-layer2/`. Use `-SkipFetch` to rebuild from already-cloned sources, and `-ValidateCode` only when you want the slower Cargo-check pass over external source snippets.
+
 ## Validation Semantics
 
 There are two validation layers:
