@@ -72,6 +72,27 @@ pub fn api_entries() -> Vec<DatasetEntry> {
     );
     option_meta.api_item = Some("Option::unwrap_or".to_string());
 
+    let mut option_map_meta = Metadata::sample(
+        "hand-authored-anchor",
+        &["option", "map", "closure"],
+        Difficulty::Beginner,
+    );
+    option_map_meta.api_item = Some("Option::map".to_string());
+
+    let mut retain_meta = Metadata::sample(
+        "hand-authored-anchor",
+        &["vec", "retain", "predicate"],
+        Difficulty::Beginner,
+    );
+    retain_meta.api_item = Some("Vec::retain".to_string());
+
+    let mut as_str_meta = Metadata::sample(
+        "hand-authored-anchor",
+        &["string", "str", "borrow"],
+        Difficulty::Beginner,
+    );
+    as_str_meta.api_item = Some("String::as_str".to_string());
+
     vec![
         entry(
             "rust-api-iterator-map-0001",
@@ -88,6 +109,30 @@ pub fn api_entries() -> Vec<DatasetEntry> {
             "When should I use `Option::unwrap_or`?",
             "Use `Option::unwrap_or` when you want a default value if an `Option` is `None`.\n\n```rust\nfn main() {\n    let port: Option<u16> = None;\n    let port = port.unwrap_or(8080);\n    println!(\"{port}\");\n}\n```\n\nIf the option is `Some(value)`, that value is returned instead.",
             option_meta,
+        ),
+        entry(
+            "rust-api-option-map-0001",
+            EntryType::ApiQa,
+            SYSTEM_PRECISE,
+            "What does `Option::map` do in Rust?",
+            "`Option::map` transforms the value inside `Some` with a closure and leaves `None` unchanged.\n\n```rust\nfn main() {\n    let name = Some(\"rust\");\n    let upper = name.map(|text| text.to_uppercase());\n    assert_eq!(upper, Some(String::from(\"RUST\")));\n}\n```\n\nUse it when the absence case should stay absent while the present value changes.",
+            option_map_meta,
+        ),
+        entry(
+            "rust-api-vec-retain-0001",
+            EntryType::ApiQa,
+            SYSTEM_PRECISE,
+            "How does `Vec::retain` work?",
+            "`Vec::retain` keeps only the elements for which its predicate returns `true`. It mutates the vector in place.\n\n```rust\nfn main() {\n    let mut values = vec![1, 2, 3, 4];\n    values.retain(|value| value % 2 == 0);\n    assert_eq!(values, vec![2, 4]);\n}\n```\n\nIt is different from `retain_mut`: `retain` lets the closure inspect each element, while `retain_mut` can also mutate it.",
+            retain_meta,
+        ),
+        entry(
+            "rust-api-string-as-str-0001",
+            EntryType::ApiQa,
+            SYSTEM_PRECISE,
+            "When should I use `String::as_str`?",
+            "`String::as_str` borrows a `String` as a string slice without allocating or moving the owned string.\n\n```rust\nfn print_label(label: &str) {\n    println!(\"{label}\");\n}\n\nfn main() {\n    let label = String::from(\"rust\");\n    print_label(label.as_str());\n    println!(\"{label}\");\n}\n```\n\nUse it when an API expects `&str` and you want to keep using the original `String` afterward.",
+            as_str_meta,
         ),
     ]
 }

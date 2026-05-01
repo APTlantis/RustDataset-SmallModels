@@ -119,8 +119,11 @@ def sample_entries(entries: list[dict[str, Any]], max_examples: int | None, seed
         grouped.setdefault(key, []).append(entry)
 
     rng = random.Random(seed)
-    for rows in grouped.values():
-        rng.shuffle(rows)
+    for key, rows in grouped.items():
+        if key == "code_repair":
+            rows[:] = repair_balanced_order(rows, rng)
+        else:
+            rng.shuffle(rows)
 
     sampled: list[dict[str, Any]] = []
     keys = sorted(grouped)
@@ -138,8 +141,58 @@ def sample_entries(entries: list[dict[str, Any]], max_examples: int | None, seed
     return sampled
 
 
+def repair_error_kind(entry: dict[str, Any]) -> str:
+    metadata = entry.get("metadata")
+    if isinstance(metadata, dict):
+        error_kind = metadata.get("error_kind")
+        if isinstance(error_kind, str) and error_kind:
+            return error_kind
+    return "unknown"
+
+
+def repair_balanced_order(entries: list[dict[str, Any]], rng: random.Random) -> list[dict[str, Any]]:
+    """Return repair entries in a deterministic round-robin by error kind.
+
+    sample_entries pops from the end of each type bucket, so this returns the
+    reverse of the desired draw order.
+    """
+
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for entry in entries:
+        grouped.setdefault(repair_error_kind(entry), []).append(entry)
+
+    for rows in grouped.values():
+        rng.shuffle(rows)
+
+    draw_order: list[dict[str, Any]] = []
+    keys = sorted(grouped)
+    while keys:
+        next_keys = []
+        for key in keys:
+            rows = grouped[key]
+            if rows:
+                draw_order.append(rows.pop())
+            if rows:
+                next_keys.append(key)
+        keys = next_keys
+
+    return list(reversed(draw_order))
+
+
 def count_types(entries: list[dict[str, Any]]) -> dict[str, int]:
     return dict(sorted(Counter(str(entry.get("type", "unknown")) for entry in entries).items()))
+
+
+def count_repair_error_kinds(entries: list[dict[str, Any]]) -> dict[str, int]:
+    return dict(
+        sorted(
+            Counter(
+                repair_error_kind(entry)
+                for entry in entries
+                if str(entry.get("type", "unknown")) == "code_repair"
+            ).items()
+        )
+    )
 
 
 def load_tokenizer(model_name: str):
@@ -242,6 +295,7 @@ def main() -> int:
                 "filtered_invalid": filtered_invalid,
                 "capped_examples": capped_examples,
                 "counts_by_type": count_types(entries),
+                "code_repair_error_kinds": count_repair_error_kinds(entries),
             },
             indent=2,
         )

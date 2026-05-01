@@ -18,7 +18,9 @@ pub fn generate_sft_from_chunks(input: &Path, output: &Path) -> Result<Vec<Datas
 }
 
 pub fn concept_entries_from_chunks(chunks: &[MdBookChunk]) -> Vec<DatasetEntry> {
-    chunks.iter().map(concept_entry_from_chunk).collect()
+    let mut entries = concept_anchor_entries();
+    entries.extend(chunks.iter().map(concept_entry_from_chunk));
+    entries
 }
 
 fn concept_entry_from_chunk(chunk: &MdBookChunk) -> DatasetEntry {
@@ -58,9 +60,57 @@ fn assistant_content(chunk: &MdBookChunk) -> String {
             "{summary}\n\n```rust\n{code}\n```\n\nThis example is intentionally small so the concept stays focused."
         )
     } else {
-        format!(
-            "{summary}\n\nThe key idea is to connect the rule to the ownership, borrowing, type, or control-flow behavior in the surrounding Rust code."
-        )
+        summary
+    }
+}
+
+fn concept_anchor_entries() -> Vec<DatasetEntry> {
+    vec![
+        concept_anchor_entry(
+            "rust-concept-anchor-question-mark-0001",
+            "Explain the `?` operator in Rust.",
+            "The `?` operator is used inside a function that returns `Result` or `Option`. It unwraps the success value and returns early if there is an error.\n\n```rust\nfn parse_port(input: &str) -> Result<u16, std::num::ParseIntError> {\n    let port = input.trim().parse::<u16>()?;\n    Ok(port)\n}\n```\n\nHere `?` turns `Ok(value)` into `value`; if parsing fails, the `ParseIntError` is returned from `parse_port`.",
+            &["result", "question-mark", "error-handling"],
+        ),
+        concept_anchor_entry(
+            "rust-concept-anchor-iterator-filter-map-0001",
+            "How do `filter` and `map` work together on iterators?",
+            "`filter` keeps only items that match a predicate, and `map` transforms each remaining item. They are lazy until a consumer such as `collect` runs.\n\n```rust\nfn doubled_even(values: &[i32]) -> Vec<i32> {\n    values.iter().copied().filter(|n| n % 2 == 0).map(|n| n * 2).collect()\n}\n```\n\nThis copies values out of the slice, keeps even numbers, doubles them, and collects the result into a `Vec<i32>`.",
+            &["iterator", "filter", "map", "collect"],
+        ),
+        concept_anchor_entry(
+            "rust-concept-anchor-display-bound-0001",
+            "What does a `Display` trait bound mean?",
+            "A `Display` bound means a value can be formatted with `{}`. Generic functions use the bound when they need human-readable formatting.\n\n```rust\nuse std::fmt::Display;\n\nfn label<T: Display>(name: T) -> String {\n    format!(\"name: {name}\")\n}\n```\n\nWithout `T: Display`, the compiler cannot know that `name` supports `{}` formatting.",
+            &["trait", "display", "generics"],
+        ),
+    ]
+}
+
+fn concept_anchor_entry(id: &str, user: &str, assistant: &str, topics: &[&str]) -> DatasetEntry {
+    let mut metadata = Metadata::sample("hand-authored-anchor", topics, Difficulty::Beginner);
+    metadata.quality_score = 0.95;
+    metadata.validated = true;
+    metadata.cargo_check = Some(true);
+
+    DatasetEntry {
+        id: id.to_string(),
+        entry_type: EntryType::ConceptQa,
+        messages: vec![
+            Message {
+                role: Role::System,
+                content: SYSTEM_CONCEPTS.to_string(),
+            },
+            Message {
+                role: Role::User,
+                content: user.to_string(),
+            },
+            Message {
+                role: Role::Assistant,
+                content: assistant.to_string(),
+            },
+        ],
+        metadata,
     }
 }
 
@@ -157,9 +207,11 @@ mod tests {
 
         let entries = concept_entries_from_chunks(&[chunk]);
 
-        assert_eq!(entries.len(), 1);
-        assert_eq!(entries[0].id, "rust-concept-mdbook-000001");
-        assert!(validate_entry(&entries[0]).is_empty());
+        let generated = entries
+            .iter()
+            .find(|entry| entry.id == "rust-concept-mdbook-000001")
+            .unwrap();
+        assert!(validate_entry(generated).is_empty());
     }
 
     #[test]
@@ -175,7 +227,12 @@ mod tests {
 
         let entries = concept_entries_from_chunks(&[chunk]);
 
-        assert!(!entries[0].messages[2].content.contains("Hello, Rust"));
-        assert!(validate_entry(&entries[0]).is_empty());
+        let generated = entries
+            .iter()
+            .find(|entry| entry.id == "rust-concept-mdbook-000002")
+            .unwrap();
+        assert!(!generated.messages[2].content.contains("Hello, Rust"));
+        assert!(!generated.messages[2].content.contains("The key idea is"));
+        assert!(validate_entry(generated).is_empty());
     }
 }

@@ -139,7 +139,7 @@ mod tests {
 
         let rows = export_parquet(&out, &out.join("rust_corpus.parquet")).unwrap();
 
-        assert_eq!(rows, 8);
+        assert_eq!(rows, 11);
         assert!(out.join("rust_corpus.parquet").exists());
 
         std::fs::remove_dir_all(root).unwrap();

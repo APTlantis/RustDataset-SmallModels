@@ -108,6 +108,40 @@ class PrepareRustTrainTests(unittest.TestCase):
         self.assertEqual({"code_completion", "code_repair", "concept_qa"}, sampled_types)
         self.assertEqual(6, len(sampled))
 
+    def test_code_repair_sampling_balances_error_kinds(self) -> None:
+        entries = [
+            {
+                "id": f"repair-brace-{index:02}",
+                "type": "code_repair",
+                "metadata": {"error_kind": "missing_closing_brace"},
+            }
+            for index in range(20)
+        ] + [
+            {
+                "id": f"repair-mut-{index:02}",
+                "type": "code_repair",
+                "metadata": {"error_kind": "immutable_binding_mutated"},
+            }
+            for index in range(3)
+        ] + [
+            {
+                "id": f"repair-question-{index:02}",
+                "type": "code_repair",
+                "metadata": {"error_kind": "missing_question_mark"},
+            }
+            for index in range(3)
+        ]
+
+        sampled = sample_entries(entries, 9, seed=42)
+        sampled_kinds = [
+            entry["metadata"]["error_kind"]
+            for entry in sampled
+        ]
+
+        self.assertGreaterEqual(sampled_kinds.count("immutable_binding_mutated"), 2)
+        self.assertGreaterEqual(sampled_kinds.count("missing_question_mark"), 2)
+        self.assertLessEqual(sampled_kinds.count("missing_closing_brace"), 5)
+
 
 if __name__ == "__main__":
     unittest.main()
