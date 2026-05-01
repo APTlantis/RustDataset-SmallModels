@@ -1,7 +1,7 @@
 {
   "input": "out",
-  "total_entries": 22,
-  "valid_entries": 22,
+  "total_entries": 277,
+  "valid_entries": 277,
   "invalid_entries": 0,
   "files": {
     "rust_api_qa.jsonl": {
@@ -13,75 +13,106 @@
       "cargo_check_not_run": 2
     },
     "rust_code_completion.jsonl": {
-      "entries": 6,
-      "valid_entries": 6,
+      "entries": 136,
+      "valid_entries": 136,
       "invalid_entries": 0,
-      "cargo_check_passed": 6,
+      "cargo_check_passed": 136,
       "cargo_check_failed": 0,
       "cargo_check_not_run": 0
     },
     "rust_code_repair.jsonl": {
-      "entries": 6,
-      "valid_entries": 6,
+      "entries": 130,
+      "valid_entries": 130,
       "invalid_entries": 0,
-      "cargo_check_passed": 6,
+      "cargo_check_passed": 130,
       "cargo_check_failed": 0,
       "cargo_check_not_run": 0
     },
     "rust_concepts_sft.jsonl": {
-      "entries": 8,
-      "valid_entries": 8,
+      "entries": 9,
+      "valid_entries": 9,
       "invalid_entries": 0,
       "cargo_check_passed": 0,
       "cargo_check_failed": 0,
-      "cargo_check_not_run": 8
+      "cargo_check_not_run": 9
     }
   },
   "counts_by_type": {
     "api_qa": 2,
-    "code_completion": 6,
-    "code_repair": 6,
-    "concept_qa": 8
+    "code_completion": 136,
+    "code_repair": 130,
+    "concept_qa": 9
   },
   "counts_by_validation_status": {
-    "not_validated": 10,
-    "validated": 12
+    "not_validated": 11,
+    "validated": 266
   },
   "counts_by_cargo_check": {
-    "not_run": 10,
-    "passed": 12
+    "not_run": 11,
+    "passed": 266
   },
   "counts_by_topic": {
+    "api": 12,
+    "blocks": 10,
     "canonical": 1,
+    "cargo": 32,
+    "code": 10,
     "commands": 1,
+    "completion": 10,
+    "concepts": 18,
     "config": 1,
     "corpus": 1,
+    "cpu": 1,
+    "crate": 12,
     "current": 1,
+    "export": 43,
+    "fixtures": 12,
     "forge": 1,
+    "generate": 62,
+    "hashes": 8,
+    "ingest": 57,
     "integration": 2,
-    "iterator": 1,
+    "iterator": 7,
+    "json": 30,
+    "jsonl": 10,
     "layout": 1,
-    "lib": 8,
+    "lib": 9,
     "limits": 1,
-    "main": 2,
-    "manifest": 1,
+    "lora": 1,
+    "main": 4,
+    "manifest": 13,
     "map": 1,
+    "mdbook": 26,
+    "mod": 4,
+    "option": 4,
     "outputs": 1,
+    "parquet": 12,
+    "pipeline": 18,
+    "qa": 12,
+    "quality": 63,
     "quick": 1,
-    "report": 1,
+    "repair": 9,
+    "report": 21,
+    "result": 12,
     "rust": 1,
-    "sample": 2,
+    "rustdoc": 30,
+    "sample": 14,
+    "samples": 12,
+    "schema": 8,
     "semantics": 1,
     "source": 1,
     "start": 1,
+    "string": 98,
     "suggested": 1,
-    "test": 2,
+    "test": 10,
     "tests": 2,
+    "training": 1,
+    "validate": 32,
     "validation": 1,
-    "vec": 2
+    "vec": 38
   },
   "counts_by_license": {
-    "MIT OR Apache-2.0": 22
+    "MIT OR Apache-2.0": 277
   },
   "errors": []
 }

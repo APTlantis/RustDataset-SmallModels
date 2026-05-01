@@ -48,10 +48,28 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def read_entries(input_dir: Path) -> list[dict[str, Any]]:
+def configured_dataset_files(config: dict[str, Any]) -> list[str] | None:
+    files = config.get("data", {}).get("dataset_files")
+    if files is None:
+        return None
+    if not isinstance(files, list) or not all(isinstance(name, str) for name in files):
+        raise ValueError("data.dataset_files must be a list of file names")
+    return files
+
+
+def dataset_files(input_dir: Path, configured_files: list[str] | None = None) -> list[Path]:
+    if configured_files is not None:
+        return [input_dir / name for name in configured_files]
+
+    discovered = sorted(input_dir.glob("rust_*.jsonl"))
+    if discovered:
+        return discovered
+    return [input_dir / name for name in DEFAULT_DATASET_FILES]
+
+
+def read_entries(input_dir: Path, configured_files: list[str] | None = None) -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
-    for name in DEFAULT_DATASET_FILES:
-        path = input_dir / name
+    for path in dataset_files(input_dir, configured_files):
         if not path.exists():
             continue
         with path.open("r", encoding="utf-8") as handle:
@@ -61,6 +79,7 @@ def read_entries(input_dir: Path) -> list[dict[str, Any]]:
                 item = json.loads(line)
                 if "messages" not in item:
                     raise ValueError(f"{path}:{line_no} is missing messages")
+                item["_source_file"] = path.name
                 entries.append(item)
     return entries
 
@@ -125,7 +144,7 @@ def main() -> int:
     if seed is None:
         seed = int(config_get(config, "training", "seed", 42))
 
-    entries = read_entries(input_dir)
+    entries = read_entries(input_dir, configured_dataset_files(config))
     if max_examples:
         entries = entries[: int(max_examples)]
     if not entries:
@@ -152,6 +171,7 @@ def main() -> int:
                 "train": len(train_rows),
                 "validation": len(validation_rows),
                 "chat_template": tokenizer is not None,
+                "input_examples": len(rows),
             },
             indent=2,
         )

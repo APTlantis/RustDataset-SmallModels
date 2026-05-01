@@ -8,15 +8,15 @@ target_model = "TinyLlama-1.1B-Chat-v1.0"
 created_at = "2026-04-30T00:00:00Z"
 
 [summary]
-generated_at = "2026-04-30T21:40:32.356666200+00:00"
-total_entries = 22
-schema_valid_entries = 22
+generated_at = "2026-05-01T01:56:09.499328900+00:00"
+total_entries = 277
+schema_valid_entries = 277
 schema_invalid_entries = 0
-validated_entries = 12
-not_validated_entries = 10
-cargo_check_passed = 12
+validated_entries = 266
+not_validated_entries = 11
+cargo_check_passed = 266
 cargo_check_failed = 0
-cargo_check_not_run = 10
+cargo_check_not_run = 11
 
 [outputs.rust_api_qa]
 path = "rust_api_qa.jsonl"
@@ -31,47 +31,47 @@ cargo_check_not_run = 2
 
 [outputs.rust_code_completion]
 path = "rust_code_completion.jsonl"
-bytes = 6121
-blake3 = "cbfcae50e94bb29c140767e6832fd14a19c956df86c9b4b73bed1d73f23a7e9a"
-entries = 6
-schema_valid_entries = 6
+bytes = 231955
+blake3 = "8895e7ecf5fea7611f8c902b97b001b925c299abf3c649f11ad14eebf41a318e"
+entries = 136
+schema_valid_entries = 136
 schema_invalid_entries = 0
-cargo_check_passed = 6
+cargo_check_passed = 136
 cargo_check_failed = 0
 cargo_check_not_run = 0
 
 [outputs.rust_code_repair]
 path = "rust_code_repair.jsonl"
-bytes = 6476
-blake3 = "e94c00fdbf89d43f06d5813ca5bcd7e7bb0a41fd32cc4b4f9ebf3dbdeaa22cf8"
-entries = 6
-schema_valid_entries = 6
+bytes = 272093
+blake3 = "63905c0e097fe9dea0db98037cdeecf020d3528faf3460b5ae7b52eac9a4bb69"
+entries = 130
+schema_valid_entries = 130
 schema_invalid_entries = 0
-cargo_check_passed = 6
+cargo_check_passed = 130
 cargo_check_failed = 0
 cargo_check_not_run = 0
 
 [outputs.rust_concepts_sft]
 path = "rust_concepts_sft.jsonl"
-bytes = 7190
-blake3 = "3a929f922711132b47a7245be1478b6ef4f66fbfa0b8405f2a3b759ff478829d"
-entries = 8
-schema_valid_entries = 8
+bytes = 8113
+blake3 = "8b18e4e7c9c6064c00c29a4a0938d38ceaa325b000af8b749bc751cf2b000797"
+entries = 9
+schema_valid_entries = 9
 schema_invalid_entries = 0
 cargo_check_passed = 0
 cargo_check_failed = 0
-cargo_check_not_run = 8
+cargo_check_not_run = 9
 
 [outputs.rust_corpus_parquet]
 path = "rust_corpus.parquet"
-bytes = 21741
-blake3 = "9585c606f53e822553b27f92d418d4c7797191079d2171ebc60e6757bcda5d13"
-entries = 22
-schema_valid_entries = 22
+bytes = 437552
+blake3 = "89405f38ecb498e9922a521b88955083b1dfa2cbea0e71ecd882d167b3ca973a"
+entries = 277
+schema_valid_entries = 277
 schema_invalid_entries = 0
-cargo_check_passed = 12
+cargo_check_passed = 266
 cargo_check_failed = 0
-cargo_check_not_run = 10
+cargo_check_not_run = 11
 
 [quality]
 requires_license = true

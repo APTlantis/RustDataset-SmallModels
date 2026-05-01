@@ -7,7 +7,7 @@ prepared_dir = "training/data/rust-smoke"
 train_file = "training/data/rust-smoke/train.jsonl"
 validation_file = "training/data/rust-smoke/validation.jsonl"
 validation_ratio = 0.15
-max_examples = 64
+max_examples = 256
 
 [training]
 output_dir = "models/rust-tinyllama-lora-smoke"
