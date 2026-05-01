@@ -15,7 +15,7 @@ from typing import Any
 import torch
 from datasets import load_dataset
 from peft import LoraConfig, PeftModel, get_peft_model
-from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
+from transformers import AutoModelForCausalLM, AutoTokenizer, EarlyStoppingCallback, set_seed
 
 
 _ORIGINAL_READ_TEXT = pathlib.Path.read_text
@@ -152,6 +152,16 @@ def build_sft_config(
     max_steps = max_steps_override
     if max_steps is None:
         max_steps = int(training.get("max_steps", 20))
+    eval_steps = int(training.get("eval_steps", 10))
+    load_best_model_at_end = bool(training.get("load_best_model_at_end", True))
+    save_steps = int(training.get("save_steps", eval_steps))
+    if load_best_model_at_end and save_steps != eval_steps:
+        logger.warning(
+            "Aligning save_steps=%s to eval_steps=%s because load_best_model_at_end is enabled",
+            save_steps,
+            eval_steps,
+        )
+        save_steps = eval_steps
 
     kwargs: dict[str, Any] = {
         "output_dir": str(output_dir),
@@ -165,10 +175,15 @@ def build_sft_config(
         "warmup_steps": 0,
         "lr_scheduler_type": "cosine",
         "logging_steps": int(training.get("logging_steps", 1)),
-        "save_steps": int(training.get("save_steps", 10)),
+        "save_strategy": "steps",
+        "save_steps": save_steps,
         "save_total_limit": int(training.get("save_total_limit", 2)),
         "eval_strategy": "steps",
-        "eval_steps": int(training.get("eval_steps", 10)),
+        "evaluation_strategy": "steps",
+        "eval_steps": eval_steps,
+        "load_best_model_at_end": load_best_model_at_end,
+        "metric_for_best_model": str(training.get("metric_for_best_model", "eval_loss")),
+        "greater_is_better": bool(training.get("greater_is_better", False)),
         "optim": "adamw_torch",
         "fp16": False,
         "bf16": False,
@@ -192,14 +207,30 @@ def build_sft_config(
     return SFTConfig(**filtered)
 
 
-def build_trainer(model, tokenizer, data, sft_config):
+def build_callbacks(config: dict[str, Any]):
+    training = config.get("training", {})
+    patience = int(training.get("early_stopping_patience", 0))
+    if patience <= 0:
+        return []
+    return [
+        EarlyStoppingCallback(
+            early_stopping_patience=patience,
+            early_stopping_threshold=float(training.get("early_stopping_threshold", 0.0)),
+        )
+    ]
+
+
+def build_trainer(model, tokenizer, data, sft_config, config: dict[str, Any]):
     kwargs: dict[str, Any] = {
         "model": model,
         "args": sft_config,
         "train_dataset": data["train"],
         "eval_dataset": data["validation"],
     }
+    callbacks = build_callbacks(config)
     params = inspect.signature(SFTTrainer.__init__).parameters
+    if callbacks and "callbacks" in params:
+        kwargs["callbacks"] = callbacks
     if "processing_class" in params:
         kwargs["processing_class"] = tokenizer
     elif "tokenizer" in params:
@@ -228,7 +259,7 @@ def main() -> int:
     model = load_model(model_name, use_cuda_device)
     model = setup_lora(model, config, args.resume_adapter)
     sft_config = build_sft_config(config, output_dir, tokenizer, args.max_steps, use_cuda_device)
-    trainer = build_trainer(model, tokenizer, data, sft_config)
+    trainer = build_trainer(model, tokenizer, data, sft_config, config)
     logger.info("Starting training")
     trainer.train()
     logger.info("Saving adapter to %s", output_dir)

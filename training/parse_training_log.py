@@ -13,6 +13,11 @@ from typing import Any
 
 
 DICT_PATTERN = re.compile(r"\{[^{}]*\}")
+ANSI_PATTERN = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+CONTROL_PATTERN = re.compile(r"[\x00-\x08\x0b-\x1f\x7f]")
+TRAIN_KEYS = {"loss", "mean_token_accuracy", "num_tokens"}
+EVAL_KEYS = {"eval_loss", "eval_mean_token_accuracy", "eval_num_tokens"}
+SUMMARY_KEYS = {"train_runtime", "train_loss", "train_steps_per_second"}
 
 
 def parse_args() -> argparse.Namespace:
@@ -45,15 +50,27 @@ def normalize_record(record: dict[str, Any]) -> dict[str, Any]:
     return {key: coerce_value(value) for key, value in record.items()}
 
 
+def clean_log_text(text: str) -> str:
+    text = ANSI_PATTERN.sub("", text)
+    return CONTROL_PATTERN.sub("", text)
+
+
+def is_metric_record(record: dict[str, Any]) -> bool:
+    keys = set(record)
+    return bool(keys & (TRAIN_KEYS | EVAL_KEYS | SUMMARY_KEYS))
+
+
 def parse_dict_metric_records(text: str) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
-    for match in DICT_PATTERN.finditer(text):
+    for match in DICT_PATTERN.finditer(clean_log_text(text)):
         try:
             value = ast.literal_eval(match.group(0))
         except (SyntaxError, ValueError):
             continue
         if isinstance(value, dict):
-            records.append(normalize_record(value))
+            record = normalize_record(value)
+            if is_metric_record(record):
+                records.append(record)
     return records
 
 
@@ -138,9 +155,16 @@ def relative_worse(current: float | None, best: float | None, threshold: float) 
     return current > best * (1.0 + threshold)
 
 
+def degradation_ratio(current: float | None, best: float | None) -> float | None:
+    if current is None or best is None or best == 0.0:
+        return None
+    return round((current - best) / best, 6)
+
+
 def build_summary(source: Path, records: list[dict[str, Any]], turnaround_threshold: float) -> dict[str, Any]:
     train_records = [record for record in records if "loss" in record]
     eval_records = [record for record in records if "eval_loss" in record]
+    final_summaries = [record for record in records if "train_runtime" in record or "train_loss" in record]
 
     first_train = train_records[0] if train_records else None
     last_train = train_records[-1] if train_records else None
@@ -181,6 +205,7 @@ def build_summary(source: Path, records: list[dict[str, Any]], turnaround_thresh
         "record_count": len(records),
         "train_record_count": len(train_records),
         "eval_record_count": len(eval_records),
+        "final_summary_record_count": len(final_summaries),
         "total_tokens": total_tokens,
         "last_epoch": (last_eval or last_train or {}).get("epoch"),
         "train": {
@@ -191,6 +216,11 @@ def build_summary(source: Path, records: list[dict[str, Any]], turnaround_thresh
                 best_train_accuracy, ["epoch", "loss", "mean_token_accuracy", "learning_rate", "num_tokens"]
             ),
             "best_rolling_loss": rolling_loss,
+            "final_summary": compact_record(
+                final_summaries[-1] if final_summaries else None,
+                ["epoch", "train_runtime", "train_samples_per_second", "train_steps_per_second", "train_loss"],
+            ),
+            "loss_degradation_from_best": degradation_ratio(last_loss_value, best_loss_value),
         },
         "eval": {
             "first": compact_record(first_eval, ["epoch", "eval_loss", "eval_mean_token_accuracy", "eval_num_tokens"]),
@@ -199,6 +229,7 @@ def build_summary(source: Path, records: list[dict[str, Any]], turnaround_thresh
             "best_accuracy": compact_record(
                 best_eval_accuracy, ["epoch", "eval_loss", "eval_mean_token_accuracy", "eval_num_tokens"]
             ),
+            "loss_degradation_from_best": degradation_ratio(last_eval_value, best_eval_value),
         },
         "overfit_hints": {
             "turnaround_threshold": turnaround_threshold,
@@ -206,6 +237,7 @@ def build_summary(source: Path, records: list[dict[str, Any]], turnaround_thresh
             "eval_loss_worse_than_best": eval_turnaround,
             "suggested_stop_epoch": suggested_stop_epoch,
             "stop_basis": stop_basis,
+            "train_curve_turn_epoch": rolling_loss.get("epoch") if train_turnaround and rolling_loss is not None else None,
         },
         "notes": [],
     }

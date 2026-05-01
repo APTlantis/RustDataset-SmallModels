@@ -6,3 +6,5 @@
 /models/
 /training/data/
 /training/reports/
+__pycache__/
+/TrainingReportRepairOverfitGuardrails.md
